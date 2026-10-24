@@ -12,11 +12,11 @@ from niceshare.ui.auth import authenticate_user
 
 
 def settings_page(ld: LeftDrawer, warehouses:list[Warehouse]) -> None:
-    """Settings Sub Page Creator.
+    """Creates the settings sub-page.
 
     Args:
-        ld (LeftDrawer): The Left Drawer
-        warehouses (list[Warehouse]): List of all warehouses 
+        ld (LeftDrawer): The Left Drawer to hide
+        warehouses (list[Warehouse]): List of warehouses 
 
     """
     # Redirects users to login page if not logged in 

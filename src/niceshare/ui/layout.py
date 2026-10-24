@@ -21,10 +21,11 @@ def create_layout(
     """Layout Creation function for warehouse and wiki display.
 
     Args:
-        warehouses (list[Warehouse]): A list of warehouses to layout 
-        wiki_menu (list[WikiChapter]): The Respective item wiki or None
+        warehouses (list[Warehouse]): List of warehouses
+        wiki_menu (list[WikiChapter]): List of wiki menu items or None
+
     Returns:
-        Tuple[LeftDrawer, RightDrawer | None]: A Tuple with either left and right drawer or only the left side
+        Tuple[LeftDrawer, RightDrawer | None]: Left drawer, or left & right drawer
 
     """
     # Drawers
@@ -65,10 +66,10 @@ def main_menu(
     """Main menu creation function.
     
     Args:
-        ld (LeftDrawer): The Left Drawer
-        rd (None | RightDrawer): The Right Drawer (or None)
-        classes (str): #TODO Propably html/javascript styling (scaling)
-        props (str): #TODO
+        ld (LeftDrawer): Left Drawer
+        rd (None | RightDrawer): Right Drawer (or None)
+        classes (str): CSS styling 
+        props (str): Addidtional properties for buttons
 
     """
     warehouse_btn = ui.button(settings.warehouse["label"], icon=settings.warehouse["icon"], on_click=lambda: ld.show())
@@ -100,12 +101,12 @@ def drawer_menu(
     config: dict[str, str],
     ld: LeftDrawer,
 ) -> None:
-    """Drawer (Left or Right) creation function.
+    """Creates a drawe rmenu with expandable (drawer) sections.
 
     Args:
         menu_items (list[MenuItem]): A list of all menu items 
-        config (dict[str, str]): #TODO some config 
-        ld: (LeftDrawer): #TODO 
+        config (dict[str, str]): Configuration dict for the menu
+        ld: (LeftDrawer): Left drawer
 
     See https://github.com/zauberzeug/nicegui/discussions/5566 for more documentation.
 

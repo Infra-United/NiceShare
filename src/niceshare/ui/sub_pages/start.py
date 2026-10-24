@@ -8,11 +8,11 @@ from niceshare.ui.helper.markdown import render_markdown
 
 
 def start_page(rd: RightDrawer | None, md: dict[str, str]) -> None:
-    """Creates the start page.
+    """Creates the start page page.
     
     Args:
-        rd (RightDrawer | None): The Rightdrawer or None 
-        md (dict[str,str]): #TODO 
+        rd (RightDrawer | None): The Rightdrawer to hide (if available)
+        md (dict[str,str]): Dictionary with markdown pages
 
     """
     rd.hide() if rd else None

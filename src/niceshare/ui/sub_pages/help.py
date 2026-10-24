@@ -9,11 +9,11 @@ from niceshare.ui.helper.reusable_elements import share_fab
 
 
 async def help_page(ld: LeftDrawer, md: dict[str, str]) -> None:
-    """Help Sub-Page Creator.
+    """Creates the help sub-page from markdown.
 
     Args:
-        ld (LeftDrawer): The Left Drawer
-        md (dict[str, str]): #TODO 
+        ld (LeftDrawer): The Left Drawer to hide
+        md (dict[str, str]): Directory of markdown pages
 
     """
     ld.hide()
@@ -23,13 +23,13 @@ async def help_page(ld: LeftDrawer, md: dict[str, str]) -> None:
         render_markdown(md.get(settings.help["label"]))
 
 async def wiki_page(name: str, content: str, ld: LeftDrawer, style: str) -> None:
-    """Wiki Page Creator.
+    """Creates a wiki page with styled content.
 
     Args:
-        name (str): The Name of the wiki page
-        content (str): The contents of the page as a single string block
-        ld (LeftDrawer): The Left Drawer
-        style (str): Style Attributes 
+        name (str): Name of the wiki page
+        content (str): HTML content of the page
+        ld (LeftDrawer): Left drawer to hide 
+        style (str): CSS styling string 
 
     """
     ld.hide()

@@ -16,10 +16,10 @@ async def form_page(ld: LeftDrawer, warehouses: list[Warehouse], md: dict[str, s
     """Form Sub-Page Creator.
     
     Args:
-        ld (LeftDrawer): The Left Drawer
-        warehouses (list[Warehouse]): List of all Warehouses 
-        md (dict[str, str]): #TODO
-        args (PageArguments): #TODO
+        ld (LeftDrawer): The Left drawer to hide 
+        warehouses (list[Warehouse]): List of Warehouses 
+        md (dict[str, str]): Markdown page directory
+        args (PageArguments): Page arguments containting query parameters
 
     """
     form: dict[str, str | dict[str, str]] = settings.form

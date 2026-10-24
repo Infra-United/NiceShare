@@ -1,4 +1,4 @@
-""" Checkout cart Sub-Page."""
+"""Checkout cart Sub-Page."""
 import time
 
 from nicegui import PageArguments, app, ui
@@ -15,11 +15,11 @@ from niceshare.ui.helper.reusable_elements import back_fab, badge, next_fab, tab
 
 
 async def cart_page(warehouses: list[Warehouse], args: PageArguments) -> None:
-    """Cart Sub-Page Creator.
+    """Creates the cart sub-page with warehouse and tabs.
 
     Args:
         warehouses (list[Warehouse]): List of Warehouses
-        args (PageArguments): Page Styling Arguments? #TODO 
+        args (PageArguments): Page arguments containing quary parameters
 
     """
     ui.query(".nicegui-sub-pages").classes(replace="bg-dark w-full no-scroll").style(replace="gap:0")

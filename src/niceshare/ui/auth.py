@@ -10,14 +10,17 @@ from niceshare.io.cache import Cache
 
 authenticated = Event[bool]()
 
-def create_jwt():
+def create_jwt() -> str:
     """JWT Creator.
 
     Creates a new JWT with the current time and a delta of 6 hours
+
+    Returns:
+        str: Json Web Token 
     
     """
     data = {
-        "exp": datetime.datetime.now() + datetime.timedelta(hours=6),
+        "exp": datetime.datetime.now() + datetime.timedelta(hours=6), #TODO Timezone
     }
     return jwt.encode(data, os.environ["UI_AUTH_SECRET"], algorithm="HS256")
 

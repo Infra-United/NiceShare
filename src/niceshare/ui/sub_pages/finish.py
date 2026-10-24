@@ -11,10 +11,10 @@ from niceshare.ui.layout import drawer_menu
 
 
 async def finish_page(warehouses: list[Warehouse]) -> None:
-    """Finish Page Creator.
+    """Creates the finish/checkout page with confirmation and download button.
     
     Args:
-        warehouses (list[Warehouse]): List of all warehouses 
+        warehouses (list[Warehouse]): List of warehouses 
 
     """
     ui.page_title(f"{settings.finish['label']}")

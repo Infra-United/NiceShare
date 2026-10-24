@@ -13,12 +13,12 @@ from niceshare.ui.helper.reusable_elements import next_fab, save_fab
 
 
 async def category_page(category: str | None, warehouse: Warehouse, rd: RightDrawer|None) -> None:
-    """Category Sub-Page Creator.
+    """Creates a category sub-page with an interactive grid.
 
     Args:
-        category (str | None): #TODO 
-        warehouse (Warehouse): #TODO
-        rd (RightDrawer|None): #TODO 
+        category (str | None): Optional category filter
+        warehouse (Warehouse): Warehouse instance to display 
+        rd (RightDrawer|None): Optional right drawer to hide (Always hidden if given)
 
     """
     rd.hide() if rd else None
