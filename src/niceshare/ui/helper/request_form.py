@@ -122,6 +122,7 @@ class Form:
             submit.bind_icon_from(self.request, "request", backward=lambda v: "save" if v else "outgoing_mail")
 
 
+# TODO replace the godless elvis operators
 async def submit_form(request: ObservableDict, warehouses: list[Warehouse], delete:bool = False) -> None:
     """Submits the filled form and sends email notification.
 
@@ -139,7 +140,7 @@ async def submit_form(request: ObservableDict, warehouses: list[Warehouse], dele
     request.update({"update": time.time()} if is_update and not delete else {"delete": time.time()} if delete else {"request": time.time()})
     try:
         dl_path = get_path(f"{settings.organization}-{request.get('name')}.xlsx", "lists")
-        await handle_request(request, warehouses, dl_path, delete)
+        await handle_request(request, warehouses, dl_path, True)
         await nicegui.run.io_bound(
             lambda: send_mail(
                 request,

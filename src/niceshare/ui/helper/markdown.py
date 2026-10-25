@@ -29,7 +29,7 @@ def read_page_files() -> Generator[tuple[str, str]]:
     """Markdown page reader generator.
 
     Returns:
-        Generator[tuple[str, str]]: The markdown pages as a generator. #TODO i think
+        Generator[tuple[str, str]]: The markdown pages as a generator.
 
     """
     for idx, page_conf in enumerate([settings.start, settings.help, settings.form.get("terms"), settings.warehouse]):

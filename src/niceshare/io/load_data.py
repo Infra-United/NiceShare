@@ -25,10 +25,7 @@ async def load_data_from_dav(reload: bool = False) -> tuple[list[Warehouse], dic
     """
     if not ARGS.no_nextcloud:
         if not ARGS.reload or reload: #TODO I think something is off with the way reload is used
-            try:
-                Nextcloud.singleton().pull_files()
-            except: #TODO Catch specifiec issue or remove try except
-                LOGGER.error("Failed to load data from Nextcloud.")
+            Nextcloud.singleton().pull_files()
     else:
         LOGGER.debug("Nextcloud disabled via argument. Skipping it.")
         

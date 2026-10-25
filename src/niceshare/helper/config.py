@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Self
 
 import yaml
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict, YamlConfigSettingsSource
 
 from niceshare.cli import ARGS
 from niceshare.helper.logger import LOGGER
@@ -25,20 +25,19 @@ class Settings(BaseSettings):
         # yaml_config_section='',
     )
 
-    #TODO UNUSED AND UNFINISHED
-    #@classmethod
-    #def settings_customise_sources(cls, settings_cls, **kwargs) -> YamlConfigSettingsSource:
-    #    """Applies custom sources to an existing config source.
-    #
-    #    Args:
-    #        settigs_cls: The original settings objet
-    #        **kwargs: Arguments to apply 
-    #
-    #    Returns:
-    #        YamlConfigSettingsSource: The Updates Settings
-    #
-    #    """
-    #    return (YamlConfigSettingsSource(settings_cls),)
+    @classmethod
+    def settings_customise_sources(cls, settings_cls, **kwargs) -> YamlConfigSettingsSource:
+        """Applies custom sources to an existing config source.
+    
+        Args:
+            settigs_cls: The original settings objet
+            **kwargs: Arguments to apply 
+    
+        Returns:
+            YamlConfigSettingsSource: The Updates Settings
+    
+        """
+        return (YamlConfigSettingsSource(settings_cls),)
 
     title: str = "InventurGui"
     logo: str = "logo.png"

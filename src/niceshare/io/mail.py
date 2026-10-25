@@ -11,7 +11,9 @@ from email.utils import formatdate
 from enum import StrEnum
 from pathlib import Path
 
-from dotenv.variables import Literal
+#from dotenv.variables import Literal
+from typing import Literal
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from niceshare.helper.config import settings
@@ -43,7 +45,7 @@ def send_mail(
     request_type: RequestType,
     filename: Path | None = None,
     exception: Exception | None = None,
-    mail_server: MailServer = MailServer(), #TODO Do not perform function call `MailServer` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+    mail_server: MailServer = None,
 ) -> None:
     """Sends an email notification for a request.
 
@@ -55,48 +57,69 @@ def send_mail(
         mail_server (MailServer): Custom SMTP or default if none specified
     
     """
+    mail_server = MailServer() if mail_server is None else mail_server #Default mail server
+
     LOGGER.debug("Connecting to SMTP Server...")
     email = request.get("email")
     user_id = request.get("edit_link").split("=")[-1]
 
-    with smtplib.SMTP_SSL(mail_server.domain, mail_server.port, context=ssl.create_default_context()) as smtp:
-        smtp.ehlo()
-        smtp.set_debuglevel(1)
+    # Constructing the email
+    mail = MIMEMultipart("mixed")
+    mail.add_header("Subject", _create_subject(request, request_type))
+    mail.add_header("From", f"{mail_server.user}")
+    mail.add_header("Reply-To", f"{email}") 
+    mail.add_header("Date", formatdate(localtime=True))
+    mail.add_header("Message-ID", f"<{user_id}-{request.get(request_type)}@{mail_server.domain}>")
 
-        LOGGER.debug("Logging into SMTP Client with credentials...")
-        smtp.login(mail_server.user, mail_server.password)
-        mail = MIMEMultipart("mixed")
-        mail.add_header("Subject", _create_subject(request, request_type))
-        mail.add_header("From", f"{email}")
-        mail.add_header("Date", formatdate(localtime=True))
-        mail.add_header("Message-ID", f"<{user_id}-{request.get(request_type)}@{mail_server.domain}>")
+    # Handling non request type emails (update, delete, failure)
+    if request_type != "request":
+        mail.add_header("In-Reply-To", f"<{user_id}-{request.get(RequestType.request)}@{mail_server.domain}>")
+        mail.add_header("References", f"<{user_id}-{request.get('request')}@{mail_server.domain}>")
+    mail.add_header("Return-Path", mail_server.user)
+    mail.add_header("Reply-To", f"{email}")
+    # mail.attach(MIMEText(create_text("text", request, exception), "plain"))
+    mail.attach(MIMEText(_create_text("html", request, exception), "html"))
 
-        # Handling non request type emails (update, delete, failure)
-        if request_type != "request":
-            mail.add_header("In-Reply-To", f"<{user_id}-{request.get(RequestType.request)}@{mail_server.domain}>")
-            mail.add_header("References", f"<{user_id}-{request.get('request')}@{mail_server.domain}>")
-        mail.add_header("Return-Path", mail_server.user)
-        mail.add_header("Reply-To", f"{email}")
-        # mail.attach(MIMEText(create_text("text", request, exception), "plain"))
-        mail.attach(MIMEText(_create_text("html", request, exception), "html"))
+    # Attaching file as payload 
+    if filename is not None:
+        with Path.open(filename, "rb") as attachment:
+            part = MIMEBase("application", "octet-stream")
+            part.set_payload(attachment.read())
+        encoders.encode_base64(part)
+        part.add_header("Content-Disposition", f"attachment; filename={filename.name}")
+        mail.attach(part)
 
-        # Attaching file as payload 
-        if filename is not None:
-            with Path.open(filename, "rb") as attachment:
-                part = MIMEBase("application", "octet-stream")
-                part.set_payload(attachment.read())
-            encoders.encode_base64(part)
-            part.add_header("Content-Disposition", f"attachment; filename={filename.name}")
-            mail.attach(part)
+    # Setting receiver and sending email
+    receiver = [settings.mail["mail_to"], request.get("email")] if not exception else [settings.mail["admin"]]
+    mail.add_header("To", ", ".join(receiver))
 
-        # Setting receiver and sending email
-        receiver = [settings.mail["mail_to"], request.get("email")] if not exception else [settings.mail["admin"]]
-        mail.add_header("To", ", ".join(receiver))
-        LOGGER.debug(f"Sending E-Mail to {receiver}...")
-        smtp.ehlo()
-        smtp.sendmail(str(mail_server.user), receiver, mail.as_string())
-        LOGGER.debug("Quitting Connection to SMTP Server...")
-        smtp.quit()
+    if mail_server.port == 1025:
+        # Proton mail bridge 
+        with smtplib.SMTP(mail_server.domain, mail_server.port) as smtp:
+            smtp.starttls()
+            smtp.ehlo()
+            smtp.set_debuglevel(1)
+
+            LOGGER.debug("Logging into SMTP Client with credentials...")
+            smtp.login(mail_server.user, mail_server.password)
+
+            LOGGER.debug(f"Sending E-Mail to {receiver}...")
+            smtp.ehlo()
+            smtp.sendmail(str(mail_server.user), receiver, mail.as_string())
+            LOGGER.debug("Quitting Connection to SMTP Server...")
+    else:
+        # Other emails
+        with smtplib.SMTP_SSL(mail_server.domain, mail_server.port, context=ssl.create_default_context()) as smtp:
+            smtp.ehlo()
+            smtp.set_debuglevel(1)
+
+            LOGGER.debug("Logging into SMTP Client with credentials...")
+            smtp.login(mail_server.user, mail_server.password)
+
+            LOGGER.debug(f"Sending E-Mail to {receiver}...")
+            smtp.ehlo()
+            smtp.sendmail(str(mail_server.user), receiver, mail.as_string())
+            LOGGER.debug("Quitting Connection to SMTP Server...")
 
 
 def _create_subject(request: dict[str, str | dict[str, str]], rtype: RequestType) -> str:
@@ -110,14 +133,14 @@ def _create_subject(request: dict[str, str | dict[str, str]], rtype: RequestType
         str: Formatted subject string
 
     """
-    start, end, month, year = convert_dates(request.get("dates")) #TODO start, end never used
+    _, _, month, year = convert_dates(request.get("dates"))
     if rtype == RequestType.update or rtype == RequestType.delete:
         return f"Re: [{i18n.get(f'mail.{rtype}')}] {request.get('name')} {month} {year}"
     return f"[{i18n.get(f'mail.{rtype}')}] {request.get('name')} {month} {year}"
 
 
 def _create_text(
-    ttype: Literal["text", "html"], request: dict[str, str | float | dict[str, str]], exception: Exception #TODO some problem here
+    ttype: Literal["text", "html"], request: dict[str, str | float | dict[str, str]], exception: Exception  # noqa: F821, UP037
 ) -> str:
     """Creates the email body text in plain or HTML format.
 
@@ -135,7 +158,7 @@ def _create_text(
     for key, value in request.items():
         match key:
             case "dates":
-                start, end, month, year = convert_dates(request.get("dates")) #TODO month, year unused
+                start, end, _, _ = convert_dates(request.get("dates")) 
                 add.append(f"{i18n.get('form.start')}: {start}")
                 add.append(f"{i18n.get('form.end')}: {end}")
                 continue
@@ -154,6 +177,6 @@ def _create_text(
     add.append(f"{newline}{newline}{settings.form.get('message')}: {newline}{newline}{request.get('message')}")
     add.append(newline)
     if exception:
-        add.append(f"{newline}{newline}{list(exception.args)}: {newline}{newline}{traceback.print_exc()}")
+        add.append(f"{newline}{newline}{list(exception.args)}: {newline}{newline}{traceback.format_exc()}")
 
     return newline.join(add)

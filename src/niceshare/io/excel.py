@@ -7,6 +7,7 @@ from polars import DataFrame
 from xlsxwriter import Workbook
 from xlsxwriter.worksheet import Worksheet
 
+from niceshare.cli import ARGS
 from niceshare.helper.config import settings
 from niceshare.helper.dates import convert_dates
 from niceshare.helper.i18n import i18n
@@ -36,7 +37,7 @@ async def handle_request(
         DataFrame: The processed request data, including overlaps and metadata
 
     """
-    start, end, month, year = convert_dates(request.get("dates"), string=False) #TODO UNUSED
+    _, _, _, year = convert_dates(request.get("dates"), string=False) 
     path = get_path(f"{settings.requests['filename']}-20{year}.xlsx")
     sheets = {}
     name_col = settings.form["input"].get("name")
@@ -48,7 +49,8 @@ async def handle_request(
     else: # Read all sheets and get overview sheet
         sheets: dict[str, DataFrame] = pl.read_excel(path, sheet_id=0, raise_if_empty=False)
         overview = next(iter(sheets.values()))
-        if overview.is_empty(): overview = write_overview(request)
+        if overview.is_empty(): 
+            overview = write_overview(request)
         elif delete:
             overview = overview.join(write_overview(request), on=name_col, how='anti')
         else: # Append request
@@ -106,7 +108,10 @@ async def handle_request(
             write_sheet(sheets[name], worksheet, workbook)
 
     LOGGER.info(f"Successfully wrote request to {path}")
-    Nextcloud.singleton().push_file(path)
+    if ARGS.no_nextcloud:
+        LOGGER.debug("not pushing file update to nextcloud - disabled in cli")
+    else:
+        Nextcloud.singleton().push_file(path)
     return sheets[request_name]
 
 def write_overview(request: dict[str, str | dict[str, str]]) -> DataFrame:
@@ -125,7 +130,7 @@ def write_overview(request: dict[str, str | dict[str, str]]) -> DataFrame:
     for key, value in request.items():
         match key:
             case "dates":
-                start, end, month, year = convert_dates(request.get("dates"))
+                start, end, month, _ = convert_dates(request.get("dates"))
                 for k, v in {"month": month, "start": start, "end": end}.items():
                     df.insert_column(count, pl.lit(v).alias(i18n.get(f"form.{k}")))
                     count += 1
@@ -136,9 +141,10 @@ def write_overview(request: dict[str, str | dict[str, str]]) -> DataFrame:
                 if key in settings.form["input"].keys():
                     df.insert_column(count, pl.lit(value).alias(f"{settings.form['input'].get(key)}"))
                     count += 1
-                elif key in i18n.get("mail"):
-                    df.insert_column(count, pl.lit(value).alias(i18n.get(f"mail.{key}")))
-                    count += 1
+                # TODO i18n.get("mail") does not work
+                #elif key in i18n.get("mail"):
+                #    df.insert_column(count, pl.lit(value).alias(i18n.get(f"mail.{key}")))
+                #    count += 1
                 elif key == "edit_link":
                     df.insert_column(count, pl.lit(value).alias(i18n.get("finish.editing_link")))
     LOGGER.info("Successfully created overview sheet.")
@@ -182,8 +188,8 @@ def find_overlaps(sheets:dict[str, DataFrame], request: dict[str, str | dict[str
     """
     # Check if to requests overlap timewise
     overview = next(iter(sheets.values()))
-    overlap = i18n.get("form.overlap")
-    start, end, month, year = convert_dates(request["dates"], string=False) #TODO month is unused
+    overlap:str = i18n.get("form.overlap")
+    start, end, _, year = convert_dates(request["dates"], string=False) 
     col_start = pl.col(i18n.get("form.start")).str.strptime(pl.Date, settings.date_format)
     col_end = pl.col(i18n.get("form.end")).str.strptime(pl.Date, settings.date_format)
     start_check_1 = pl.lit(start).is_between(col_start, col_end)
@@ -192,7 +198,7 @@ def find_overlaps(sheets:dict[str, DataFrame], request: dict[str, str | dict[str
     end_check_2 = pl.lit(end).is_between(col_start, col_end)
     overlap_df = overview.filter(start_check_1 | start_check_2 | end_check_1 | end_check_2)
     if overlap in overview.columns:
-        overlap_df = pl.concat([overlap_df , overview.filter(pl.col(overlap))], how='diagonal_relaxed')
+        overlap_df = pl.concat([overlap_df , overview.filter(pl.col(overlap).is_not_null())], how='diagonal_relaxed')
     overlap_names = overlap_df.select(settings.form["input"].get("name")).unique().to_series().to_list()
 
     # Check if the overlapping requests actually overlap in data

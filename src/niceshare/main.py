@@ -77,9 +77,9 @@ def main():
     storage_secret = os.environ["UI_STORAGE_SECRET"]
     os.environ.setdefault("NICEGUI_STORAGE_PATH", str(get_path("users")))
 
-    app.add_static_file(local_file=get_path("manifest.json"), url_path="/helpers/manifest.json", strict=True)
-    app.add_static_file(local_file=get_path("service_worker.js"), url_path="/helpers/service_worker.js", strict=True)
-    app.add_static_file(local_file=get_path("favicon.png"), url_path="/favicon.ico", strict=True)
+    app.add_static_file(local_file=get_path("manifest.json"), url_path="/helpers/manifest.json", strict=False)
+    app.add_static_file(local_file=get_path("service_worker.js"), url_path="/helpers/service_worker.js", strict=False)
+    app.add_static_file(local_file=get_path("favicon.png"), url_path="/favicon.ico", strict=False)
 
     Path("./files/splash/").mkdir(exist_ok=True,parents=True)
     Path("./files/icons/").mkdir(exist_ok=True,parents=True)

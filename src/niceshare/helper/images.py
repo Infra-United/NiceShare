@@ -146,7 +146,7 @@ async def cache_image(url_dict: dict[str, str], subfolder:str, filename: str, th
             if response.status_code == 200 and response.headers["content-type"].startswith("image"):
                 image = Image.open(BytesIO(response.content))
                 if not get_path(subfolder, "images").is_dir():
-                    mkdir(get_path(subfolder, "images"))
+                    Path.mkdir(get_path(subfolder, "images"))
                 image.save(path)
                 make_thumbnail(path, thumbnail_size)
                 LOGGER.info(f"Successfully downloaded image from {url_dict['url']} and saved to {path}")

@@ -2,6 +2,7 @@
 from pathlib import Path
 from typing import Self
 
+import requests.exceptions
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from webdav4.client import Client
 
@@ -65,7 +66,7 @@ class Nextcloud(Client):
             LOGGER.exception(f"\nFile: >>>{path}<<< does not exist.\n Shutting down.")
             exit(1)
 
-    def pull_files(self):
+    def pull_files(self) -> None:
         """Pull files (multible) from remote."""
         for key, file in settings.dav["pull"].items():
             self.pull_file(key, file)
@@ -93,9 +94,11 @@ class Nextcloud(Client):
                     f"Checked in {self._webdav_url}.\nPlease review config."
                 )
                 self.shut_down_if_missing_file(local)
-        except: #TODO Add speficic excepts
-            LOGGER.warning(f"Cannot connect to {self._domain}.\nPlease check your Internet Connection.")
+        except requests.exceptions.Timeout:  
+            LOGGER.warning(f"Cannot connect to {self._domain}.\nConnection timed out.")
             self.shut_down_if_missing_file(local)
+        except Exception as e:
+            LOGGER.error(f"An unexpected error occured when attempting to connect to nc. Error: {e}")
 
     def push_file(self, file: Path, force:bool = True) -> None:
         """Push File to remote (Update or Upload).

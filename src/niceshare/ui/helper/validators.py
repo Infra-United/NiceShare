@@ -47,8 +47,6 @@ def validate_number(key: str, donation: str, request: ObservableDict) -> Any | N
         Any | None: Error message if failed, None otherwise
 
     """
-    #TODO cast to int outside and only accept int for donation 
-
     try:
         request.update({key: int(donation)})
     except ValueError:
