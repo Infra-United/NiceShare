@@ -16,7 +16,7 @@ WAREHOUSE_ROOT = slugify(settings.warehouse["label"])
 
 @dataclass
 class Warehouse(MenuItem):
-    """Warehouse Class."""
+    """Warehouse Menu Item."""
     name: str
     inventory: DataFrame
 
@@ -33,7 +33,12 @@ class Warehouse(MenuItem):
     @override
     @property
     def routes(self) -> dict[str, str]:
-        """#TODO."""
+        """Getter for warehouse category path dict.
+
+        Returns:
+            dict[str, str]: Dict of category name and path 
+
+        """
         routes: dict[str, str] = {}
         for category in self.categories:
             routes.update({category: f"/{WAREHOUSE_ROOT}/{slugify(self.name)}/{slugify(category)}"})

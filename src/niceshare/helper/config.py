@@ -30,7 +30,7 @@ class Settings(BaseSettings):
         """Applies custom sources to an existing config source.
     
         Args:
-            settigs_cls: The original settings objet
+            settings_cls: The original settings objet
             **kwargs: Arguments to apply 
     
         Returns:

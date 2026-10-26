@@ -29,7 +29,7 @@ class Nextcloud(Client):
 
     instance = None
 
-    def __init__(self, remote_dir: str, ncs: NextcloudSettings = NextcloudSettings()): #TODO Do not perform function call `NextcloudSettings` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+    def __init__(self, remote_dir: str, ncs: NextcloudSettings = None): 
         """Initializes a Nextcloud client instance.
 
         Args:
@@ -37,6 +37,7 @@ class Nextcloud(Client):
             ncs (NextcloudSettings): Settings for Nextcloud
 
         """
+        ncs = NextcloudSettings() if ncs is None else ncs
         self._domain = ncs.domain
         self._user = ncs.user
         self._webdav_url = f"https://{self._domain}/remote.php/dav/files/{self._user}"

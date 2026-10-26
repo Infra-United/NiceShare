@@ -2,7 +2,6 @@
 import base64
 from contextlib import suppress
 from io import BytesIO
-from os import mkdir
 from pathlib import Path
 
 import httpx
@@ -90,7 +89,7 @@ async def upload_img(warehouse_name:str, event: UploadEventArguments, data:dict)
 
     Args:
         warehouse_name (str): Warehouse name to be used in the file name
-        event (UploadEventArguments): #TODO Unused, remove or implemend
+        event (UploadEventArguments): Args for Uploader
         data (dict): Data dict to be updated 
     
     """

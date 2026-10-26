@@ -140,7 +140,7 @@ def _create_subject(request: dict[str, str | dict[str, str]], rtype: RequestType
 
 
 def _create_text(
-    ttype: Literal["text", "html"], request: dict[str, str | float | dict[str, str]], exception: Exception  # noqa: F821, UP037
+    ttype: Literal["text", "html"], request: dict[str, str | float | dict[str, str]], exception: Exception
 ) -> str:
     """Creates the email body text in plain or HTML format.
 
