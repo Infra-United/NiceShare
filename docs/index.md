@@ -32,13 +32,3 @@ Example Usage here: https://infra.uber.space
 - Stores requests with an overview of all requests per year, and the list for each request of course
 
 ### Optional: Export all requests to excel and sync the file to your Nextcloud!
-
-## Roadmap
-### Make config available in admin page
-- [x] create /admin page accessible through /login
-- [ ] create a nice input form for config values
-
-### Make everything even more customizable for different use cases
-- [ ] Option to optimize for many small requests (e.g. overview per Month)
-- [ ] Make Locations/Warehouses customizable so they can be managed by different groups
-- [ ] Add optional map and calendar for use case in cities

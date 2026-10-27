@@ -1,4 +1,5 @@
-from nicegui import ui, app
+"""Finish/Checkout Sub-Page Module."""
+from nicegui import app, ui
 
 from niceshare.helper.config import settings
 from niceshare.helper.i18n import i18n
@@ -9,7 +10,13 @@ from niceshare.ui.helper.reusable_elements import back_fab
 from niceshare.ui.layout import drawer_menu
 
 
-async def finish_page(warehouses: list[Warehouse]):
+async def finish_page(warehouses: list[Warehouse]) -> None:
+    """Creates the finish/checkout page with confirmation and download button.
+    
+    Args:
+        warehouses (list[Warehouse]): List of warehouses 
+
+    """
     ui.page_title(f"{settings.finish['label']}")
     with ui.tab_panel("finish").classes("w-full h-dvh m-0"):
         with ui.column(align_items="center").classes("mx-auto my-auto text-center items-center"):

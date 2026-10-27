@@ -1,13 +1,19 @@
+"""Login Sub Page Module."""
 import os
 import time
 
-from nicegui import ui, app
+from nicegui import app, ui
 
 from niceshare.ui.auth import create_jwt
-from niceshare.ui.layout import main_menu, drawer_menu
+from niceshare.ui.layout import drawer_menu, main_menu
 
 
-def login_page():
+def login_page() -> None:
+    """Login Page Constructor.
+    
+    Manages the safe User Login
+
+    """
     app.storage.user.update({"auth_token": None})
     main_menu.refresh()
     drawer_menu.refresh()
@@ -27,6 +33,6 @@ def login_page():
             await drawer_menu.refresh()
             ui.navigate.to("/")
         else:
-            time.sleep(1)
+            time.sleep(1) #TODO bad
             pw_in.set_value("")
             ui.notify("This password is incorrect.", color="negative")

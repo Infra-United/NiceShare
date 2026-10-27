@@ -1,3 +1,5 @@
+"""Module for internationalization (translation)."""
+
 from i18n_modern import I18nModern
 
 from niceshare.helper.config import settings

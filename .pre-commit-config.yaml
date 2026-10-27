@@ -27,6 +27,3 @@ repos:
        # name: ty check
         #entry: uvx ty check . --ignore unresolved-import unresolved-reference
         #language: python
-    #TODO maybe add pyright
-    #TODO maybe add tests
-

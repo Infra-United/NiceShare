@@ -1,6 +1,7 @@
+"""Checkout cart Sub-Page."""
 import time
 
-from nicegui import app, ui, PageArguments
+from nicegui import PageArguments, app, ui
 
 from niceshare.helper.config import settings
 from niceshare.helper.i18n import i18n
@@ -10,10 +11,17 @@ from niceshare.io.warehouse import Warehouse
 from niceshare.ui.grid.grid import create_aggrid
 from niceshare.ui.helper.calculations import total_weight
 from niceshare.ui.helper.magic_links import load_data_from_magic_link
-from niceshare.ui.helper.reusable_elements import badge, next_fab, tabs, tab_panels, back_fab
+from niceshare.ui.helper.reusable_elements import back_fab, badge, next_fab, tab_panels, tabs
 
 
 async def cart_page(warehouses: list[Warehouse], args: PageArguments) -> None:
+    """Creates the cart sub-page with warehouse and tabs.
+
+    Args:
+        warehouses (list[Warehouse]): List of Warehouses
+        args (PageArguments): Page arguments containing quary parameters
+
+    """
     ui.query(".nicegui-sub-pages").classes(replace="bg-dark w-full no-scroll").style(replace="gap:0")
 
     current_id = app.storage.browser["id"]
@@ -23,7 +31,7 @@ async def cart_page(warehouses: list[Warehouse], args: PageArguments) -> None:
 
     if Cache.total() == 0:
         ui.notify(i18n.get("cart.select_tip"), type="warning", position="center", color="primary", textColor="dark")
-        time.sleep(1)
+        time.sleep(1) #TODO bad
         ui.navigate.to("/")
         return
     if not Cache.notified() and Cache.total() != 0:

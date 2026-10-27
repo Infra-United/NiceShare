@@ -1,8 +1,7 @@
+"""This module implements functions that handle the command line interface of the program."""
 import argparse
 import logging
 from argparse import Namespace
-
-"""This module implements functions that handle the command line interface of the program."""
 
 
 # Get Arguments from Commandline
@@ -10,7 +9,8 @@ def get_args() -> Namespace:
     """Creates and configures an argparser for the command line interface and returns the arguments given by the user as a dictionary.
 
     Returns:
-        dict: The arguments given in the command line.
+        Namespace: The arguments given in the command line.
+
     """
     # Get argparser
     argparser = argparse.ArgumentParser(
@@ -23,6 +23,8 @@ def get_args() -> Namespace:
     argparser.add_argument("-ld", "--debug", dest="debug", help="set the log level to debug", action="store_true")
     argparser.add_argument("-d", "--dev", dest="dev", help="mark that you are developing", action="store_true")
     argparser.add_argument("-i", "--images", dest="images", help="reload all images from their source url", action="store_true")
+    argparser.add_argument("-nn", "--no-nextcloud", dest="no_nextcloud", help="don't attempt to fetch data from nextcloud", action="store_true")
+
     argparser.set_defaults(config_file="config.yml")
     # Parse args to dictionary
     args: Namespace = argparser.parse_args()

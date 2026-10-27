@@ -1,7 +1,18 @@
-from niceshare.ui.grid.columns import default_col_defs, col_defs
+"""Options for Gird Styling and display."""
+from niceshare.ui.grid.columns import col_defs, default_col_defs
 
 
 def options(cart: bool, admin: bool) -> dict:
+    """Geberates AgGrid options based on user role/privilages and cart mode.
+    
+    Args:
+        cart (bool): Whether in cart mode
+        admin (bool): If the user is admin
+    
+    Returns.
+        dict: Dict of AgGrid configuration options 
+    
+    """
     return {
         "selectionColumnDef": {"hide": cart, "maxWidth": 35, "sortable": True},
         "columnDefs": col_defs(cart, admin),

@@ -1,3 +1,4 @@
+"""Request Form Module."""
 import datetime
 import socket
 import time
@@ -17,25 +18,33 @@ from niceshare.helper.logger import LOGGER
 from niceshare.helper.paths import get_path
 from niceshare.io.cache import Cache
 from niceshare.io.excel import handle_request
-from niceshare.io.mail import send_mail, RequestType
+from niceshare.io.mail import RequestType, send_mail
 from niceshare.io.warehouse import Warehouse
 from niceshare.ui.helper.magic_links import get_magic_link
-from niceshare.ui.helper.validators import validate_mail, INPUT_VALIDATION, validate_number
+from niceshare.ui.helper.validators import INPUT_VALIDATION, validate_mail, validate_number
 
 
 class Form:
+    """Default Form for Requests."""
     def __init__(self):
+        """Form init."""
         self.inputs: list[Input] = []
         self.checks: list[Checkbox] = []
         self.dates: Date = ui.date()
         self.request: ObservableDict = Cache.form()
 
     def validate(self) -> bool:
+        """Validates the correctness of the form.
+
+        Returns:
+            bool: If the form is valid, False otherwise
+
+        """
         with suppress(NameError):
-            if any([not i.validate() for i in self.inputs]):
+            if any(not i.validate() for i in self.inputs):
                 ui.notify(i18n.get("form.please_fill_field"))
                 return False
-            elif any([not c.value for c in self.checks]):
+            elif any(not c.value for c in self.checks):
                 ui.notify(i18n.get("form.please_check_boxes"))
                 return False
             elif self.dates.value is None:
@@ -45,7 +54,13 @@ class Form:
                 return True
         return False
 
-    def create(self, warehouses: list[Warehouse]):
+    def create(self, warehouses: list[Warehouse]) -> None:
+        """Creates a new form.
+
+        Args:
+            warehouses (list[Warehouse]): A list of available warehouses 
+
+        """
         with ui.dialog() as delete_dialog:
             with ui.card():
                 ui.label(i18n.get("finish.are_you_sure").upper()).classes("w-full pt-2 text-center tracking-widest")
@@ -107,7 +122,16 @@ class Form:
             submit.bind_icon_from(self.request, "request", backward=lambda v: "save" if v else "outgoing_mail")
 
 
+# TODO replace the godless elvis operators
 async def submit_form(request: ObservableDict, warehouses: list[Warehouse], delete:bool = False) -> None:
+    """Submits the filled form and sends email notification.
+
+    Args:
+        request (ObservableDict): Form Data
+        warehouses (list[Warehouse]):  List of warehouses
+        delete:bool = False: Whether to delete the request
+
+    """
     is_update = True if request.get("request") else False
     request.update({"finish": i18n.get("finish.processing")})
     ui.navigate.to(f"/{slugify(settings.finish['label'])}")
@@ -116,7 +140,7 @@ async def submit_form(request: ObservableDict, warehouses: list[Warehouse], dele
     request.update({"update": time.time()} if is_update and not delete else {"delete": time.time()} if delete else {"request": time.time()})
     try:
         dl_path = get_path(f"{settings.organization}-{request.get('name')}.xlsx", "lists")
-        await handle_request(request, warehouses, dl_path, delete)
+        await handle_request(request, warehouses, dl_path, True)
         await nicegui.run.io_bound(
             lambda: send_mail(
                 request,
@@ -125,12 +149,12 @@ async def submit_form(request: ObservableDict, warehouses: list[Warehouse], dele
             )
         )
         request.update({"download": str(dl_path)})
-    except Exception as exception:
+    except Exception as e:
         request.update({"finish": i18n.get("finish.failure_mail")})
         try:
-            LOGGER.exception(exception)
+            LOGGER.exception(e)
             await nicegui.run.io_bound(
-                lambda: send_mail(request, request_type=RequestType.failure, exception=exception)
+                lambda exc=e: send_mail(request, request_type=RequestType.failure, exception=exc)
             )
             request.update({"finish": i18n.get("finish.failure_success")})
         except socket.gaierror:

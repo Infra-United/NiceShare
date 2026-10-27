@@ -1,3 +1,4 @@
+"""Grid Handler Module."""
 from contextlib import suppress
 
 import polars as pl
@@ -9,7 +10,7 @@ from polars import DataFrame
 
 from niceshare.helper.config import settings
 from niceshare.helper.i18n import i18n
-from niceshare.helper.images import upload_img, delete_img
+from niceshare.helper.images import delete_img, upload_img
 from niceshare.io.cache import Cache
 from niceshare.io.warehouse import Warehouse
 from niceshare.ui.auth import authenticate_user
@@ -17,7 +18,16 @@ from niceshare.ui.helper.markdown import render_markdown
 from niceshare.ui.helper.validators import validate_url
 
 
-async def update_amount(grid: AgGrid, name:str, df: DataFrame, event: GenericEventArguments):
+async def update_amount(grid: AgGrid, name:str, df: DataFrame, event: GenericEventArguments) -> None:
+    """Update item count in cart and recalculate total weight.
+
+    Args:
+        grid (AgGrid): The AgGrid isntance
+        name (str): Warehouse name
+        df (DataFrame): Inventory data
+        event (GenericEventArguments): Event args from grid interaction
+
+    """
     with suppress(KeyError):
         if event.args["rowPinned"]:
             return
@@ -36,7 +46,15 @@ async def update_amount(grid: AgGrid, name:str, df: DataFrame, event: GenericEve
     Cache.set_weight(name, await total_weight(name, df))
 
 
-def handle_select(name: str, event: GenericEventArguments, grid: AgGrid):
+def handle_select(name: str, event: GenericEventArguments, grid: AgGrid) -> None:
+    """Handles row selection in the grid.
+
+    Args:
+        grid (AgGrid): The AgGrid isntance
+        name (str): Warehouse name
+        event (GenericEventArguments): Event args from grid interaction
+
+    """
     with suppress(KeyError):
         if event.args["source"] == "api":
             return
@@ -51,7 +69,15 @@ def handle_select(name: str, event: GenericEventArguments, grid: AgGrid):
         grid.run_row_method(row_id, "setSelected", False)
 
 
-def handle_click(warehouse:Warehouse, grid: AgGrid, event: GenericEventArguments):
+def handle_click(warehouse:Warehouse, grid: AgGrid, event: GenericEventArguments) -> None:
+    """Handles click event on single cell.
+    
+    Args:
+        warehouse (Warehouse): Warehouse instance
+        grid (AgGrid): The AgGrid isntance
+        event (GenericEventArguments): Event args from grid interaction
+
+    """
     columns = settings.columns
     data = event.args["data"]
     admin = authenticate_user()
@@ -60,15 +86,26 @@ def handle_click(warehouse:Warehouse, grid: AgGrid, event: GenericEventArguments
                 any([data[columns["image"]], data[columns["comment"]], data[columns["url"]]])
                 and event.args["colId"] == columns["image"] and not admin
         ):
-            info_popup(warehouse, event.args, grid)
+            _info_popup(warehouse, event.args, grid)
         elif admin and event.args["colId"] == columns["image"]:
-            info_popup(warehouse, event.args, grid)
+            _info_popup(warehouse, event.args, grid)
         else:
             handle_select(warehouse.name, event, grid) if not admin else None
     except KeyError:
         handle_select(warehouse.name, event, grid) if not admin else None
 
-def info_popup(warehouse:Warehouse, event_args: dict, grid: AgGrid):
+def _info_popup(warehouse:Warehouse, event_args: dict, grid: AgGrid) -> Dialog:
+    """Displays a popup dialog with item details and editing options.
+
+    Args:
+        warehouse (Warehouse): Warehouse instance
+        event_args (dict): Event arguments containting data
+        grid (AgGrid): The AgGrid isntance
+
+    Returns:
+        Dialog: The created dialog
+
+    """
     admin = authenticate_user()
     data = event_args["data"]
     with ui.dialog(value=True) as dia:
@@ -77,7 +114,16 @@ def info_popup(warehouse:Warehouse, event_args: dict, grid: AgGrid):
     return dia
 
 @ui.refreshable
-def dia_content(dia:Dialog, name: str, data: dict[str, str], admin: bool):
+def dia_content(dia:Dialog, name: str, data: dict[str, str], admin: bool) -> None:
+    """Renders the content of the info popup dialog.
+
+    Args:
+        dia (Dialog): Dialog instance 
+        name (str): Warehouse name
+        data (dict[str, str], admin: bool)): Item data
+        admin (bool): If the user is admin
+
+    """
     columns = settings.columns
     with (dia.clear(), ui.card().classes("w-100 gap-2 items-center text-center py-4 text-bold")):
         ui.label(text=f"{data.get(columns['object'])}")
@@ -110,7 +156,15 @@ def dia_content(dia:Dialog, name: str, data: dict[str, str], admin: bool):
             md.bind_visibility(md, "content")
         ui.button("Fertig", icon="check", on_click=lambda: dia.close()).props("text-color=secondary")
 
-def update_row_data(data: dict[str, str], grid: AgGrid, warehouse:Warehouse):
+def update_row_data(data: dict[str, str], grid: AgGrid, warehouse:Warehouse) -> None:
+    """Updates the grid row with modified data.
+
+    Args:
+        data (dict[str, str]): Modified item data
+        grid (AgGrid): The AgGrid instance
+        warehouse (Warehouse): Warehouse instance
+
+    """
     grid.run_row_method(data["index"], "setData", data)
     updated = pl.from_dict(data)
     warehouse.inventory = warehouse.inventory.update(updated, on="index", how="full")

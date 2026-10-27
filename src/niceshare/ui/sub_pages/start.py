@@ -1,3 +1,4 @@
+"""Start Sub-Page Module."""
 from nicegui import ui
 from nicegui.elements.drawer import RightDrawer
 
@@ -7,6 +8,13 @@ from niceshare.ui.helper.markdown import render_markdown
 
 
 def start_page(rd: RightDrawer | None, md: dict[str, str]) -> None:
+    """Creates the start page page.
+    
+    Args:
+        rd (RightDrawer | None): The Rightdrawer to hide (if available)
+        md (dict[str,str]): Dictionary with markdown pages
+
+    """
     rd.hide() if rd else None
     LOGGER.debug("Creating start page...")
     ui.page_title(settings.title)

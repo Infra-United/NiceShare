@@ -1,6 +1,5 @@
-from typing import Tuple
-
-from nicegui import ui, app
+"""Layout functions for displaying warehouse contents, wiki pages."""
+from nicegui import app, ui
 from nicegui.elements.button import Button
 from nicegui.elements.drawer import LeftDrawer, RightDrawer
 from nicegui.elements.expansion import Expansion
@@ -11,21 +10,31 @@ from niceshare.helper.config import settings
 from niceshare.helper.paths import get_path
 from niceshare.io.cache import Cache
 from niceshare.io.warehouse import Warehouse
-from niceshare.io.wiki import WikiChapter, MenuItem
+from niceshare.io.wiki import MenuItem, WikiChapter
 from niceshare.ui.auth import authenticate_user
 from niceshare.ui.helper.reusable_elements import badge
 
 
 def create_layout(
     warehouses: list[Warehouse], wiki_menu: list[WikiChapter] | None
-) -> Tuple[LeftDrawer, RightDrawer | None]:
+) -> tuple[LeftDrawer, RightDrawer | None]:
+    """Layout Creation function for warehouse and wiki display.
+
+    Args:
+        warehouses (list[Warehouse]): List of warehouses
+        wiki_menu (list[WikiChapter]): List of wiki menu items or None
+
+    Returns:
+        Tuple[LeftDrawer, RightDrawer | None]: Left drawer, or left & right drawer
+
+    """
     # Drawers
     with ui.left_drawer(bordered=True).classes("gap-y-2 p-0 items-stretch").props("width=250") as ld:
         ui.space().classes("sm:hidden")
     if wiki_menu:
         with ui.right_drawer(bordered=True).classes("gap-y-2 p-0 items-stretch").props("width=250") as rd:
             ui.space().classes("sm:hidden")
-            drawer_menu([c for c in wiki_menu], settings.help, ld)
+            drawer_menu(list(wiki_menu), settings.help, ld)
     with ld:
         drawer_menu(warehouses, settings.warehouse, ld)
 
@@ -50,10 +59,19 @@ def create_layout(
 @ui.refreshable
 def main_menu(
     ld: LeftDrawer,
-    rd: None | RightDrawer,
+    rd: RightDrawer | None,
     classes: str = "stretch",
     props: str = "unelevated no-wrap text-color=secondary square",
 ) -> None:
+    """Main menu creation function.
+    
+    Args:
+        ld (LeftDrawer): Left Drawer
+        rd (None | RightDrawer): Right Drawer (or None)
+        classes (str): CSS styling 
+        props (str): Addidtional properties for buttons
+
+    """
     warehouse_btn = ui.button(settings.warehouse["label"], icon=settings.warehouse["icon"], on_click=lambda: ld.show())
     warehouse_btn.on_click(lambda: (ui.navigate.to(f"/{slugify(settings.warehouse['label'])}"), drawer_menu.refresh()) if Cache.width() > 640 else None)
     warehouse_btn.classes(classes).props(props)
@@ -82,9 +100,16 @@ def drawer_menu(
     menu_items: list[MenuItem],
     config: dict[str, str],
     ld: LeftDrawer,
-):
-    """
-    See https://github.com/zauberzeug/nicegui/discussions/5566 for some documentation.
+) -> None:
+    """Creates a drawe rmenu with expandable (drawer) sections.
+
+    Args:
+        menu_items (list[MenuItem]): A list of all menu items 
+        config (dict[str, str]): Configuration dict for the menu
+        ld: (LeftDrawer): Left drawer
+
+    See https://github.com/zauberzeug/nicegui/discussions/5566 for more documentation.
+
     """
     menu_root = slugify(config["label"])
 

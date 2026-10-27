@@ -2,7 +2,10 @@
 name = "niceshare"
 version = "0.1.0"
 description = "This is a simple Python GUI that displays data from table sheets (.ods) on a Website in a nice way. It is used for inventory management in organizations that lend stuff for free or vs donations."
-authors = [{ name = "whoami", email = "schmusi@systemli.org" }]
+authors = [
+    { name = "whoami", email = "schmusi@systemli.org" },
+    { name = "halfdrownedrat", email = "halfdrownedrat@proton.me" }
+    ]
 requires-python = ">=3.14"
 readme = "README.md"
 license = "MIT"
@@ -29,6 +32,37 @@ dependencies = [
     "xlsxwriter>=3.2.9",
 ]
 
+[dependency-groups]
+dev = [
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.7.6",
+    "pre-commit>=4.6.0",
+
+    "pylic>=5.0.1,<6.0.0",
+    "pytest-asyncio>=1.4.0,<2.0.0",
+    "requests>=2.34.2,<3.0.0",
+    "ruff>=0.16.7,<0.17.0",
+]
+
+# https://docs.astral.sh/ruff/configuration/
+# https://docs.astral.sh/ruff/settings
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+exclude = ["tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "I", "D",
+    "S", "B", "RUF", "UP", "PTH", "ASYNC", "N", "C4", "TRY", "LOG", "G", "T20", "DTZ", "PT",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+docstring-code-format = true
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/niceshare"]
 
@@ -38,10 +72,3 @@ niceshare = "niceshare:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[dependency-groups]
-dev = [
-    "mkdocs>=1.6.1",
-    "mkdocs-material>=9.7.6",
-    "pre-commit>=4.6.0",
-]

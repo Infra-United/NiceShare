@@ -1,3 +1,4 @@
+"""Category Sub-Page Module."""
 import polars as pl
 from nicegui import ui
 from nicegui.elements.drawer import RightDrawer
@@ -12,6 +13,14 @@ from niceshare.ui.helper.reusable_elements import next_fab, save_fab
 
 
 async def category_page(category: str | None, warehouse: Warehouse, rd: RightDrawer|None) -> None:
+    """Creates a category sub-page with an interactive grid.
+
+    Args:
+        category (str | None): Optional category filter
+        warehouse (Warehouse): Warehouse instance to display 
+        rd (RightDrawer|None): Optional right drawer to hide (Always hidden if given)
+
+    """
     rd.hide() if rd else None
     path = f"{warehouse.name}/{category}" if category else warehouse.name
     ui.page_title(path)

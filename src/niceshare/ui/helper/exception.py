@@ -1,8 +1,15 @@
+"""Custom exceptions."""
 from nicegui import app, ui
 
 
 @app.on_page_exception
-def file_not_found(exception: Exception):
+def file_not_found(exception: Exception) -> None:
+    """Custom file_not_found exception.
+
+    Args:
+        exception (Exception): The exception that originally occured
+
+    """
     if not isinstance(exception, FileNotFoundError):
         raise exception
     text = (

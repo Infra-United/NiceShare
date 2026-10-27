@@ -1,3 +1,4 @@
+"""This module implements functions to create AG Grids which display the data."""
 from nicegui import ui
 from nicegui.elements.aggrid import AgGrid
 from nicegui.ui import aggrid
@@ -5,12 +6,9 @@ from polars import DataFrame
 
 from niceshare.helper.config import settings
 from niceshare.io.cache import Cache
-from niceshare.io.warehouse import Warehouse
 from niceshare.ui.auth import authenticate_user
 from niceshare.ui.grid.grid_handlers import handle_select, update_amount
 from niceshare.ui.grid.options import options
-
-"""This module implements functions to create AG Grids which display the data."""
 
 columns = settings.columns
 
@@ -19,12 +17,13 @@ async def create_aggrid(name: str, df:DataFrame, cart: bool = False) -> AgGrid:
     """Returns an AG Grid displaying the given data in the given configuration.
 
     Args:
-        category (str): name of the Category to display
-        warehouse (Warehouse): The warehouse the category belongs to.
+        name (str): Warehouse or cart name
+        df (DataFrame): Data to display in the grid
         cart (bool): Whether the grid is for the cart page. Defaults to False.
 
     Returns:
         AgGrid: The AG Grid that results from the given Arguments.
+
     """
     admin = authenticate_user()
 
@@ -44,8 +43,17 @@ async def create_aggrid(name: str, df:DataFrame, cart: bool = False) -> AgGrid:
     return grid
 
 
-def register_event_handlers(grid: AgGrid, name: str, df: DataFrame, cart: bool, admin: bool):
-    """Register the event handlers for the given grid."""
+def register_event_handlers(grid: AgGrid, name: str, df: DataFrame, cart: bool, admin: bool) -> None:
+    """Register the event handlers for the given grid.
+
+    Args:
+        grid (AgGrid): The AgGrid instance 
+        name (str): Warehouse or cart name
+        df (DataFrame): DataFrame used in the grid
+        cart (bool): Whether the grid is for the cart page. Defaults to False.
+        admin (bool):If the user is admin
+        
+    """
     # Handle events
     grid.on("rowSelected", lambda e: handle_select(name, e, grid))
     if not cart and not admin:

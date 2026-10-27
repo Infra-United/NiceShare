@@ -1,5 +1,7 @@
+"""Columns Module."""
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+from typing import Any
 
 from niceshare.helper.config import settings
 
@@ -8,6 +10,18 @@ type colDefFunction = Callable[[colSettings, bool, bool], dict[str, Any]]
 
 
 def col_defs(cart: bool, admin: bool, columns=settings.columns) -> list[dict[str, Any]]:
+    """Generates column definitions based on user role and cart mode.
+
+    Args:
+        cart (bool): Whether in cart mode 
+        admin (bool): If the user is admin
+        columns: The column names
+
+    Returns:
+        list[dict[str, Any]]: List of column definition directorys 
+    # TODO unsure
+
+    """
     return [col_fns.get(c)(columns, cart, admin) if col_fns.get(c) else {"hide": True} for c in columns.keys()]
 
 
@@ -15,6 +29,15 @@ col_fns = {}
 
 
 def register_column(name: str) -> Callable[[colDefFunction], colDefFunction]:
+    """Decorator to register a column definition function.
+
+    Args:
+        name (str): Column name to register
+
+    Returns:
+        Callable[[colDefFunction], colDefFunction]: Decorator that registers the function in col_fns.
+    
+    """
     def decorator(func: colDefFunction) -> colDefFunction:
         @wraps(func)
         def wrapper(columns: colSettings, cart: bool, admin: bool) -> dict[str, Any]:
@@ -27,6 +50,12 @@ def register_column(name: str) -> Callable[[colDefFunction], colDefFunction]:
 
 
 def default_col_defs() -> dict[str, Any]:
+    """Returns default column properties.
+
+    Returns:
+        dict[str, Any]: Dictionary with default column settings.
+
+    """
     return {
         "editable": False,
         "suppressSizeToFit": True,
@@ -42,6 +71,17 @@ def default_col_defs() -> dict[str, Any]:
 
 @register_column("image")
 def image_col(columns: colSettings, cart: bool, admin: bool) -> dict[str, Any]:
+    """Generates image column definition.
+
+    Args:
+        columns (colSettings): Column settings
+        cart (bool): Whether in cart mode 
+        admin (bool): If the user is admin
+
+    Returns:
+        dict[str, Any]: Image Column definition.
+
+    """
     return {
         "colId": columns["image"],
         "editable": False,
@@ -59,6 +99,17 @@ def image_col(columns: colSettings, cart: bool, admin: bool) -> dict[str, Any]:
 
 @register_column("object")
 def object_col(columns: colSettings, cart: bool, admin: bool) -> dict[str, Any]:
+    """Generates object column definition.
+
+    Args:
+        columns (colSettings): Column settings
+        cart (bool): Whether in cart mode 
+        admin (bool): If the user is admin
+
+    Returns:
+        dict[str, Any]: Image Column definition.
+
+    """
     return {
         "field": columns["object"],
         "filter": not cart,
@@ -71,20 +122,42 @@ def object_col(columns: colSettings, cart: bool, admin: bool) -> dict[str, Any]:
     }
 
 
-# Not used at the moment
-def description_col(columns: colSettings, cart: bool, admin: bool) -> dict[str, Any]:
-    return {
-        "colId": columns["type"],
-        "field": columns["type"],
-        "suppressSizeToFit": False,
-        "wrapText": True,
-        "autoHeight": True,
-        "sortable": False,
-    }
+# TODO Not used at the moment
+#def description_col(columns: colSettings, cart: bool, admin: bool) -> dict[str, Any]:
+#    """#TODO.
+#
+    #Args:
+#        columns (colSettings):
+#        cart (bool):
+#        admin (bool):
+#
+    #Returns:
+#        dict[str, Any]
+#    
+#    """
+#    return {
+#        "colId": columns["type"],
+#        "field": columns["type"],
+#        "suppressSizeToFit": False,
+#        "wrapText": True,
+#        "autoHeight": True,
+#        "sortable": False,
+#    }
 
 
 @register_column("weight")
 def weight_col(columns: colSettings, cart: bool, admin: bool) -> dict[str, Any]:
+    """Generates weight column definition.
+
+    Args:
+        columns (colSettings): Column settings
+        cart (bool): Whether in cart mode 
+        admin (bool): If the user is admin
+
+    Returns:
+        dict[str, Any]: Weight column definition
+    
+    """
     return {
         "field": columns["weight"],
         ":valueFormatter": "(p) => p.value != null ? p.value + ' kg' : null",
@@ -99,6 +172,17 @@ def weight_col(columns: colSettings, cart: bool, admin: bool) -> dict[str, Any]:
 
 @register_column("count")
 def count_col(columns: colSettings, cart: bool, admin: bool) -> dict[str, Any]:
+    """Generates count column definition.
+
+    Args:
+        columns (colSettings): Column settings
+        cart (bool): Whether in cart mode 
+        admin (bool): If the user is admin
+
+    Returns:
+        dict[str, Any]: Count column definition
+    
+    """
     return {
         "colId": columns["count"],
         ":valueGetter": f"(p) => p.data.{columns['count']}",
@@ -120,6 +204,17 @@ def count_col(columns: colSettings, cart: bool, admin: bool) -> dict[str, Any]:
 
 @register_column("pack")
 def pack_col(columns: colSettings, cart: bool, admin: bool) -> dict[str, Any]:
+    """Generates pack column definition.
+
+    Args:
+        columns (colSettings): Column settings
+        cart (bool): Whether in cart mode 
+        admin (bool): If the user is admin
+
+    Returns:
+        dict[str, Any]: Pack column definition
+    
+    """
     return {
         "field": columns["pack"],
         "lockPosition": "left" if cart else "",
@@ -128,21 +223,43 @@ def pack_col(columns: colSettings, cart: bool, admin: bool) -> dict[str, Any]:
     }
 
 
-# Not Used at the moment
-def delete_col() -> dict[str, Any]:
-    return {
-        "colId": "add_delete",
-        # ":editable": f"(p) => p.node.rowPinned ? true : false",
-        ":valueGetter": "(p) => p.node.rowPinned ? 'added' : 'deleted'",
-        ":cellRenderer": '''(p) => p.node.rowPinned ?
-                 "<span class='material-icons-outlined' style='font-size:28px'>add</span>" :
-                  "<span class='material-icons-outlined' style='font-size:28px'>delete</span>"''',
-        "maxWidth": 60,
-    }
+# TODO Not Used at the moment
+#def delete_col() -> dict[str, Any]:
+#    """#TODO.
+#
+#    Args:
+#        columns (colSettings):
+#        cart (bool):
+#        admin (bool):
+#
+#    Returns:
+#        dict[str, Any]
+#    
+#    """
+#    return {
+#        "colId": "add_delete",
+#        # ":editable": f"(p) => p.node.rowPinned ? true : false",
+#        ":valueGetter": "(p) => p.node.rowPinned ? 'added' : 'deleted'",
+#        ":cellRenderer": '''(p) => p.node.rowPinned ?
+#                 "<span class='material-icons-outlined' style='font-size:28px'>add</span>" :
+#                  "<span class='material-icons-outlined' style='font-size:28px'>delete</span>"''',
+#        "maxWidth": 60,
+#    }
 
 
 @register_column("total_weight")
 def total_weight_col(columns: colSettings, cart: bool, admin: bool) -> dict[str, Any]:
+    """Generates total weight column definition.
+
+    Args:
+        columns (colSettings): Column settings
+        cart (bool): Whether in cart mode 
+        admin (bool): If the user is admin
+
+    Returns:
+        dict[str, Any]: Total weight column definition
+    
+    """
     return {
         "colId": columns["total_weight"],
         "field": columns["total_weight"],

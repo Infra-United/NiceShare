@@ -43,6 +43,15 @@ Example Usage here: https://infra.uber.space
 5) Copy files/default_config.yml to config.yml and edit it to your needs
 6) Create a systemd service and set environment variables with your credentials 
 
+# Install on NixOS
+1) Clone this repository
+2) cd into it
+3) Run `nix develop`
+4) Run `uv run niceshare`
+5) Copy files/default_config.yml to config.yml and edit it to your needs
+6) WIP
+
+
 ## Configuration
 ### Config.yml
 #### General settings
@@ -154,35 +163,40 @@ settings: # Only visible for admins and editors
   label: 'Einstellungen'
 ```
 
+### Inventur.xlsx 
+Defined by `config.yml` Names need completly match between Excel file and config.
+
+Each `.xlsx` is an Inventory. Each Sheet in the excel is a warehouse. The columns are the values from the columns dict. (Shelf, Category, Name, ...)
+
+Optional Fields are: #TODO 
+
+### /files/splash 
+Empty Folders are being created to avoid error. 
+
+Folder content gets generted here: https://www.pwa-icon-generator.com/splash-screen-generator/
+The other files can be discarded #TODO can they?
+
+### Markdown pages 
+Placeholder pages are created if the user hasn't created any. All pages need to be in `files/pages/`. The naming scheme is definied in the `config.yml`.
+
 ### Environment Variables
 ```dotenv
-NEXTCLOUD_TOKEN=my-super-secret-nextcloud-app-token;
-NEXTCLOUD_USER=exampleuser;
-NEXTCLOUD_DOMAIN=cloud.example.org;
+NEXTCLOUD_TOKEN=my-super-secret-nextcloud-app-token
+NEXTCLOUD_USER=exampleuser
+NEXTCLOUD_DOMAIN=cloud.example.org
 ```
 
 #### UI
 ```dotenv
-UI_STORAGE_SECRET=somerandomstringlongenoughtobesafe;
-UI_ADMIN_PASSWORD=some password you will use to log in to admin panel;
-UI_AUTH_SECRET=somerandomstringlongerthan32characters;
+UI_STORAGE_SECRET=somerandomstringlongenoughtobesafe
+UI_ADMIN_PASSWORD=some password you will use to log in to admin panel
+UI_AUTH_SECRET=somerandomstringlongerthan32characters
 ```
 
 #### Mail
 ``` dotenv
-MAIL_USER=user@example.org;
-MAIL_PORT=465;
-MAIL_PASSWORD=my super secret mail password;
-MAIL_DOMAIN=mailserver.example.org;
+MAIL_USER=user@example.org
+MAIL_PORT=465
+MAIL_PASSWORD=my super secret mail password
+MAIL_DOMAIN=mailserver.example.org
 ```
-
-
-## Roadmap
-### Make config available in admin page
-- [x] create /admin page accessible through /login
-- [ ] create a nice input form for config values
-
-### Make everything even more customizable for different use cases
-- [ ] Option to optimize for many small requests (e.g. overview per Month)
-- [ ] Make Locations/Warehouses customizable so they can be managed by different groups
-- [ ] Add optional map and calendar for use case in cities

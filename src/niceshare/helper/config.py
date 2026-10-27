@@ -1,3 +1,4 @@
+"""Config / Settings Module."""
 from logging import debug, exception, warning
 from pathlib import Path
 from typing import Self
@@ -9,19 +10,33 @@ from niceshare.cli import ARGS
 from niceshare.helper.logger import LOGGER
 from niceshare.helper.paths import get_path
 
-config_file: Path = get_path(ARGS.config_file)
-default_config_file: Path = get_path("default_config.yml")
+CONFIG_FILE: Path = get_path(ARGS.config_file) #The User created config file 
+DEFAULT_CONFIG_FILE: Path = get_path("default_config.yml") #Default fallback file
 
 
-# This is only for creating a default config if we cant find any
 class Settings(BaseSettings):
+    """Base Config Creator.
+
+    Creates the config file from hardcodet variables. Any changes to the default should be made here
+
+    """
     model_config = SettingsConfigDict(
-        yaml_file=config_file,
+        yaml_file=CONFIG_FILE,
         # yaml_config_section='',
     )
 
     @classmethod
-    def settings_customise_sources(cls, settings_cls, **kwargs):
+    def settings_customise_sources(cls, settings_cls, **kwargs) -> YamlConfigSettingsSource:
+        """Applies custom sources to an existing config source.
+    
+        Args:
+            settings_cls: The original settings objet
+            **kwargs: Arguments to apply 
+    
+        Returns:
+            YamlConfigSettingsSource: The Updates Settings
+    
+        """
         return (YamlConfigSettingsSource(settings_cls),)
 
     title: str = "InventurGui"
@@ -48,7 +63,7 @@ class Settings(BaseSettings):
             "help": "help.md",
             "terms": "terms.md",
             "start": "start.md",
-            "inventory": "inventory.ods",
+            "inventory": "inventory.xlsx",
         },
     }
     data: dict[str, str | int | list[str] | dict[str, str]] = {
@@ -70,12 +85,30 @@ class Settings(BaseSettings):
     }
     @property
     def columns(self) -> dict[str, str]:
+        """Getter for the columns data.
+
+        Returns:
+            dict[str, str]: The inventory data as used in the (excel) file
+        """
         return self.data["columns"]
+
     @property
     def data_filename(self) -> str:
+        """Getter for the filename.
+
+        Returns:
+            str: The filename 
+        """
         return self.data["filename"]
-    mail: dict[str, str] = {"mail_to": "hello@example.org", "admin": "admin@example.org"}
-    start: dict[str, str | bool] = {"label": "Start", "icon": "home", "path": "about.md"}
+    mail: dict[str, str] = {
+        "mail_to": "hello@example.org",
+        "admin": "admin@example.org"
+    }
+    start: dict[str, str | bool] = {
+        "label": "Start",
+        "icon": "home",
+        "path": "about.md"
+    }
     help: dict[str, str | bool] = {
         "display": True,
         "wiki": False,
@@ -132,38 +165,46 @@ class Settings(BaseSettings):
 
     @classmethod
     def load_config(cls) -> Self:
-        debug(f"Loading config from {config_file}...")
+        """Loads the config from file.
+
+        The file to load from is specified through the argument parser (CLI)
+
+        """
+        debug(f"Loading config from {CONFIG_FILE}...")
         try:
-            with open(config_file, "r") as file:
+            with Path.open(CONFIG_FILE, "r") as file:
                 return Settings(**yaml.load(file, yaml.SafeLoader))
         except FileNotFoundError:
-            warning("File not Found - Loading default-config:", config_file)
+            warning("File not Found - Loading default-config:", CONFIG_FILE)
         except yaml.YAMLError as e:
             exception("Error in config file: \n" + e.args[0]), file.close()
-        with open(default_config_file, "r") as file:
+        # Load Default if customized is failing 
+        with Path.open(DEFAULT_CONFIG_FILE, "r") as file:
             return Settings(**yaml.load(file, yaml.SafeLoader))
 
-    def dump_config(self) -> None:
-        debug(f"Dumping config to {config_file}...")
-        try:
-            with open(config_file, "w") as file:
-                yaml.dump(self.model_dump(), file, yaml.SafeDumper)
-        except FileNotFoundError:
-            exception("File not Found:", config_file), exit(1)
-        except yaml.YAMLError as e:
-            exception("Error in config: \n" + e.args[0]), file.close(), exit(1)
+    # TODO This looked unused, what should it be used for? - P
+    # def dump_config(self) -> None:
+    #     debug(f"Dumping config to {CONFIG_FILE}...")
+    #     try:
+    #         with open(CONFIG_FILE, "w") as file:
+    #             yaml.dump(self.model_dump(), file, yaml.SafeDumper)
+    #     except FileNotFoundError:
+    #         exception("File not Found:", CONFIG_FILE), exit(1)
+    #     except yaml.YAMLError as e:
+    #         exception("Error in config: \n" + e.args[0]), file.close(), exit(1)
 
     @classmethod
     def create_default_config(cls) -> None:
-        LOGGER.debug(f"Dumping default config to {default_config_file}...")
-        if default_config_file.is_file():
-            default_config_file.unlink()
-        with open(default_config_file, "w") as file:
+        """Creates a default config file from code."""
+        LOGGER.debug(f"Dumping default config to {DEFAULT_CONFIG_FILE}...")
+        if DEFAULT_CONFIG_FILE.is_file():
+            DEFAULT_CONFIG_FILE.unlink()
+        with Path.open(DEFAULT_CONFIG_FILE, "w") as file:
             file.write(yaml.dump(Settings().model_dump(), Dumper=yaml.SafeDumper, sort_keys=False))
-        LOGGER.info(f"Successfully wrote default config to {default_config_file}.")
+        LOGGER.info(f"Successfully wrote default config to {DEFAULT_CONFIG_FILE}.")
 
-if not config_file.is_file():
+if not CONFIG_FILE.is_file():
     Settings.create_default_config()
-    print(f"Please copy {default_config_file} to {config_file} and edit it to your needs!")
+    LOGGER.warn(f"Please copy {DEFAULT_CONFIG_FILE} to {CONFIG_FILE} and edit it to your needs!")
     exit(0)
 settings = Settings.load_config()

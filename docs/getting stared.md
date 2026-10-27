@@ -6,5 +6,3 @@
 3. Install dependencies: uv run inventurgui
 
 ## Configuration
-!!! note Auto-Generated default config
-The program should 

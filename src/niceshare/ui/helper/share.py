@@ -1,3 +1,4 @@
+"""Content share helper functions."""
 from bs4 import BeautifulSoup
 from nicegui import ui
 from slugify import slugify
@@ -7,6 +8,14 @@ from niceshare.helper.images import generate_qrcode
 
 
 async def share_content(name:str, content:str, verbose: bool = False) -> None:
+    """Share content though the clipboard.
+
+    Args:
+        name (str): Content name
+        content (str): The content
+        verbose (bool): If sharing should be verbose (more/detailed)
+
+    """
     url = await ui.run_javascript('window.location.href')
     if not verbose:
         ui.clipboard.write(url)
@@ -22,10 +31,16 @@ async def share_content(name:str, content:str, verbose: bool = False) -> None:
         ui.notify(i18n.get("wiki.info_copied"), position='center', color='primary', textColor='secondary')
 
 
-async def get_qr_code(name:str):
+async def get_qr_code(name:str) -> None:
+    """Displays a QR-Code for the current page URL.
+
+    Args:
+        name (str): Name to use for the qr-code
+
+    """
     url = await ui.run_javascript('window.location.href')
     qr, path = generate_qrcode(url, "wiki", name)
-    with ((ui.dialog(value=True))):
+    with (ui.dialog(value=True)):
         with ui.image(qr.get_image()).classes("items-center"):
             btn = ui.button("Download", icon='download')
             btn.on('click', lambda: ui.download.file(path, slugify(name), "image/png"))
