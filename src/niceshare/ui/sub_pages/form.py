@@ -53,4 +53,5 @@ async def form_page(ld: LeftDrawer, warehouses: list[Warehouse], md: dict[str, s
         if terms.get("display"):
             with ui.tab_panel(terms.get("label")).classes("m-0 p-0"):
                 render_markdown(md.get(form.get("terms").get("label")))
+    form_panels.set_value("default")
     ui.on("resize", lambda e: set_panel(e.args), throttle=1, trailing_events=True)
