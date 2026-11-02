@@ -107,32 +107,32 @@ class Form:
             submit.bind_icon_from(self.request, "request", backward=lambda v: "save" if v else "outgoing_mail")
 
 
-async def submit_form(request: ObservableDict, warehouses: list[Warehouse], delete:bool = False) -> None:
-    is_update = True if request.get("request") else False
-    request.update({"finish": i18n.get("finish.processing")})
+async def submit_form(cache: ObservableDict, warehouses: list[Warehouse], delete:bool = False) -> None:
+    is_update = True if cache.get("request") else False
+    cache.update({"finish": i18n.get("finish.processing")})
     ui.navigate.to(f"/{slugify(settings.finish['label'])}")
     magic_link = get_magic_link()
-    request.update({"edit_link": magic_link})
-    request.update({"update": time.time()} if is_update and not delete else {"delete": time.time()} if delete else {"request": time.time()})
+    cache.update({"edit_link": magic_link})
+    cache.update({"update": time.time()} if is_update and not delete else {"delete": time.time()} if delete else {"request": time.time()})
     try:
-        dl_path = get_path(f"{settings.organization}-{request.get('name')}.xlsx", "lists")
-        await handle_request(request, warehouses, dl_path, delete)
+        dl_path = get_path(f"{settings.organization}-{cache.get('name')}.xlsx", "lists")
+        await handle_request(cache, warehouses, dl_path, delete)
         await nicegui.run.io_bound(
             lambda: send_mail(
-                request,
+                cache,
                 request_type=RequestType.update if is_update else RequestType.delete if delete else RequestType.request,
                 filename=dl_path,
             )
         )
-        request.update({"download": str(dl_path)})
+        cache.update({"download": str(dl_path)})
     except Exception as exception:
-        request.update({"finish": i18n.get("finish.failure_mail")})
+        cache.update({"finish": i18n.get("finish.failure_mail")})
         try:
             LOGGER.exception(exception)
             await nicegui.run.io_bound(
-                lambda: send_mail(request, request_type=RequestType.failure, exception=exception)
+                lambda: send_mail(cache, request_type=RequestType.failure, exception=exception)
             )
-            request.update({"finish": i18n.get("finish.failure_success")})
+            cache.update({"finish": i18n.get("finish.failure_success")})
         except socket.gaierror:
-            request.update({"finish": i18n.get("finish.mail_exception")})
+            cache.update({"finish": i18n.get("finish.mail_exception")})
             LOGGER.exception("The mailserver is unreachable. Try again later.")
