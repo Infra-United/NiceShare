@@ -40,6 +40,8 @@ class Warehouse(MenuItem):
         df = df.with_columns(
             [
                 pl.col(columns["count"]).cast(pl.Int64, strict=False),
+                pl.col(columns["url"]).cast(pl.String, strict=False),
+                pl.col(columns["image"]).cast(pl.String, strict=False),
                 pl.col(columns["weight"]).cast(pl.Float64, strict=False),
                 pl.col(columns["count"]).alias(columns["total"]).cast(pl.Int64, strict=False),
             ]
